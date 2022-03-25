@@ -30,7 +30,7 @@ public class DateTimeUtils {
 
   public static final Pattern MILLISECONDS_PATTERN = Pattern.compile("\\.\\d*");
 
-  private static final DateTimeFormatter FORMATTER =
+  public static final DateTimeFormatter FORMATTER =
       DateTimeFormatter.ofPattern(
           "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
               "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
@@ -43,6 +43,7 @@ public class DateTimeUtils {
    */
   @VisibleForTesting
   public static Long getEpochMicros(String jsonDateTime) {
+
     return convertDateTime(jsonDateTime, instant -> instant.toEpochMilli() * 1000);
   }
 
@@ -171,6 +172,26 @@ public class DateTimeUtils {
   public static String convertToDateFormat(String jsonDate) {
     return convertDate(jsonDate, date -> DateTimeFormatter.ISO_LOCAL_DATE.format(
         date.atStartOfDay().atZone(ZoneId.systemDefault())));
+  }
+
+  /**
+   * Verify if the value is date or date-time
+   *
+   * @param value any string value
+   * @return true - if value is date/date-time, false - if value has any other format
+   */
+  public static boolean isDateTimeValue(String value) {
+    try {
+      ZonedDateTime.parse(value, FORMATTER);
+      return true;
+    } catch (DateTimeParseException ignored) {
+      try {
+        LocalDateTime.parse(value, FORMATTER);
+        return true;
+      } catch (DateTimeParseException exception) {
+        return false;
+      }
+    }
   }
 
   /**
